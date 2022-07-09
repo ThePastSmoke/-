@@ -35,7 +35,11 @@
       close-icon-position="top-left"
       position="bottom"
     >
-      <channel_edit :active="active" :userChannel="userChannel"></channel_edit>
+      <channel_edit
+        @update_active="update_active"
+        :active="active"
+        :userChannel="userChannel"
+      ></channel_edit>
       <!-- <van-cell style="text-align: center" title="编辑频道"></van-cell> -->
     </van-popup>
     <!-- 汉堡按钮弹层 -->
@@ -52,8 +56,8 @@ export default {
   props: {},
   data() {
     return {
-      active: 0,
-      userChannel: [],
+      active: 0, // 控制page栏目谁高亮
+      userChannel: [], // tab栏数据
       isShow: false, // 汉堡按钮弹框
     };
   },
@@ -64,6 +68,11 @@ export default {
   },
   mounted() {},
   methods: {
+    // 自定义事件让子组件通知我修改active值
+    update_active(index, type) {
+      this.active = index;
+      this.isShow = type;
+    },
     // 调用获取频道列表
     async getUserChannel() {
       const res = await getUserChannel();

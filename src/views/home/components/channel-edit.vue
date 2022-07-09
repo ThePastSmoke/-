@@ -4,20 +4,29 @@
     <!-- 我的频道标题 -->
     <van-cell title="我的频道">
       <template #default>
-        <van-button class="edit_btn" plain round size="mini" type="danger"
-          >编辑</van-button
+        <van-button
+          @click="isEdit = !isEdit"
+          class="edit_btn"
+          plain
+          round
+          size="mini"
+          type="danger"
+        >
+          {{ isEdit ? "完成" : "编辑" }}</van-button
         >
       </template>
     </van-cell>
     <!-- 宫格 我的频道 -->
     <van-grid class="my_channels" :gutter="10">
       <van-grid-item
-        icon="clear"
         class="chnnel_item"
-        text="文字"
         v-for="(item, index) in userChannel"
         :key="item.id"
+        @click="onMyChannelClick(item, index)"
       >
+        <template #icon v-if="isEdit && index !== 0">
+          <van-icon name="clear"></van-icon>
+        </template>
         <template #text>
           <span class="text" :class="{ active: active === index }">
             {{ item.name }}
@@ -32,9 +41,9 @@
       <van-grid-item
         icon="plus"
         class="chnnel_item"
-        text="文字"
         v-for="item in recommendChannels"
         :key="item.id"
+        @click="addChannel(item)"
       >
         <template #text>
           <span class="text"> {{ item.name }} </span>
@@ -46,8 +55,9 @@
 </template>
 
 <script>
+import { Notify } from "vant";
 import { getAllChannels } from "@/api";
-import { differenceBy } from "lodash";
+import differenceBy from "lodash/differenceBy";
 export default {
   name: "ChannelEdit",
   components: {},
@@ -63,6 +73,7 @@ export default {
   data() {
     return {
       allChannels: [],
+      isEdit: false,
     };
   },
   computed: {
@@ -82,9 +93,26 @@ export default {
   },
   mounted() {},
   methods: {
+    onMyChannelClick(item, index) {
+      if (this.isEdit) {
+        if (index === 0) return Notify({ type: "danger", message: "不让删除" });
+        // 执行删除操作
+        if (index <= this.active) {
+          this.$emit("update_active", this.active - 1, true);
+        }
+        this.userChannel.splice(index, 1);
+      } else {
+        // 执行跳转
+        this.$emit("update_active", index, false);
+      }
+    },
     async getAllChannels() {
       const res = await getAllChannels();
       this.allChannels = res.data.data.channels;
+    },
+    // 添加Channel
+    addChannel(item) {
+      this.userChannel.push(item);
     },
   },
 };
@@ -106,7 +134,7 @@ export default {
   .recommend_channel {
     /deep/.van-icon-plus {
       color: #222;
-      font-size: 30px;
+      font-size: 20px;
       margin-right: 5px;
     }
   }
@@ -120,6 +148,9 @@ export default {
     }
     /deep/.active {
       color: red !important;
+    }
+    /deep/.van-grid-item__icon-wrapper {
+      position: unset;
     }
   }
 }
