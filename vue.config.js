@@ -11,7 +11,6 @@ module.exports = defineConfig({
   },
   configureWebpack: {
     devServer: {
-      open: true,
       host: "localhost",
       port: 3333,
     },

@@ -2,6 +2,8 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
+// 引入day.js格式化时间插件
+import "./utils/dayjs";
 // 注册全局icon组件
 import TouTiaoIcon from "@/components/TouTiaoIcon";
 import "@/style/index.less";
