@@ -9,6 +9,7 @@
         size="small"
         round
         icon="search"
+        to="/search"
         >搜索</van-button
       >
     </van-nav-bar>
@@ -49,6 +50,8 @@
 <script>
 import articleList from "@/views/home/components/article-list.vue";
 import channel_edit from "@/views/home/components/channel-edit.vue";
+import { getLocat } from "@/utils/storage";
+import { TOUTIAO_CHANNELS } from "@/constants";
 import { getUserChannel } from "@/api";
 export default {
   name: "HomePage",
@@ -75,8 +78,19 @@ export default {
     },
     // 调用获取频道列表
     async getUserChannel() {
-      const res = await getUserChannel();
-      this.userChannel = res.data.data.channels;
+      try {
+        // 获取用户tokne
+        const token = this?.$store.state?.user?.token;
+        // 获取本地存储频道数据
+        let channels = getLocat(TOUTIAO_CHANNELS);
+        if (token || !channels) {
+          const res = await getUserChannel();
+          channels = res.data.data.channels;
+        }
+        this.userChannel = channels;
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
 };

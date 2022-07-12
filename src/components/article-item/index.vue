@@ -32,7 +32,7 @@ export default {
   components: {},
   props: {
     article: {
-      type: Object,
+      type: [Object],
       required: true,
     },
   },

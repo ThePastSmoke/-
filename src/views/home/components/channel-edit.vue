@@ -56,8 +56,12 @@
 
 <script>
 import { Notify } from "vant";
-import { getAllChannels } from "@/api";
+import { getAllChannels, addUserChannel, deleteUserChannel } from "@/api";
 import differenceBy from "lodash/differenceBy";
+import { mapState } from "vuex";
+import { setLocat } from "@/utils/storage";
+import { TOUTIAO_CHANNELS } from "@/constants.js";
+
 export default {
   name: "ChannelEdit",
   components: {},
@@ -86,23 +90,40 @@ export default {
     recommendChannels() {
       return differenceBy(this.allChannels, this.userChannel, "id");
     },
+    ...mapState(["user"]),
   },
-  watch: {},
   created() {
     this.getAllChannels();
   },
-  mounted() {},
   methods: {
+    async deleteChannel(item) {
+      try {
+        if (this.user) {
+          // 已登录 在服务器端删除
+          await deleteUserChannel(item.id);
+          this.$toast("删除成功");
+        } else {
+          // 未登录 本地存储直接删
+          setLocat(TOUTIAO_CHANNELS, this.userChannel);
+        }
+      } catch (error) {
+        this.$toast("登陆失败");
+      }
+    },
     onMyChannelClick(item, index) {
       if (this.isEdit) {
+        // 编辑状态
         if (index === 0) return Notify({ type: "danger", message: "不让删除" });
         // 执行删除操作
         if (index <= this.active) {
           this.$emit("update_active", this.active - 1, true);
         }
+        // 删除了数组的某一项
         this.userChannel.splice(index, 1);
+        // 调用删除用户频道接口
+        this.deleteChannel(item);
       } else {
-        // 执行跳转
+        // 执行跳转 未编辑状态
         this.$emit("update_active", index, false);
       }
     },
@@ -111,8 +132,25 @@ export default {
       this.allChannels = res.data.data.channels;
     },
     // 添加Channel
-    addChannel(item) {
+    async addChannel(item) {
       this.userChannel.push(item);
+      // 频道持久化 判断是否登录，登录请求接口存到服务器，
+      // 未登录把数据存储到本地存储
+      if (this.user) {
+        // 用户已登录
+        try {
+          // 添加用户频道
+          await addUserChannel({
+            id: item.id,
+            seq: this.userChannel.length,
+          });
+          this.$toast("添加频道成功");
+        } catch (e) {
+          this.$toast("添加失败");
+        }
+      } else {
+        setLocat(TOUTIAO_CHANNELS, this.userChannel);
+      }
     },
   },
 };
