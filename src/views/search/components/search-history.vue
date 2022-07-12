@@ -2,15 +2,30 @@
   <div>
     <van-cell title="搜索记录">
       <template #default>
-        <van-tag class="btn" type="danger">标签</van-tag>
-        <van-tag class="btn" type="success">标签</van-tag>
-        <van-icon name="delete"></van-icon>
+        <template v-if="isDeleteHisroty">
+          <van-tag class="btn" type="danger" @click="deleteAllHisroty"
+            >全部删除</van-tag
+          >
+          <van-tag class="btn" type="success" @click="isDeleteHisroty = false"
+            >完成</van-tag
+          >
+        </template>
+        <van-icon
+          name="delete"
+          v-else
+          @click="isDeleteHisroty = true"
+        ></van-icon>
       </template>
     </van-cell>
 
-    <van-cell :title="item" v-for="(item, index) in searchHistory" :key="index">
+    <van-cell
+      @click="clickHisrotyItem(item, index)"
+      :title="item"
+      v-for="(item, index) in searchHistory"
+      :key="index"
+    >
       <template #default>
-        <van-icon name="clear"></van-icon>
+        <van-icon name="clear" v-if="isDeleteHisroty"></van-icon>
       </template>
     </van-cell>
   </div>
@@ -19,8 +34,26 @@
 <script>
 export default {
   name: "SearchHistory",
+  data() {
+    return {
+      isDeleteHisroty: false,
+    };
+  },
   props: {
     searchHistory: Array,
+  },
+  methods: {
+    // 删除全部 自定义事件通知父组件删除
+    deleteAllHisroty() {
+      this.$emit("deleteAll");
+    },
+    clickHisrotyItem(item, index) {
+      if (this.isDeleteHisroty) {
+        this.searchHistory.splice(index, 1);
+      } else {
+        this.$emit("onSearch", item);
+      }
+    },
   },
 };
 </script>

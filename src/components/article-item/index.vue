@@ -1,6 +1,7 @@
 <template>
   <div class="article-item">
-    <van-cell :title="article.title">
+    <!-- to跳转路由传递对应的文字列表id -->
+    <van-cell :title="article.title" :to="`/article/${article.art_id}`">
       <!-- 一张图 -->
       <template #default v-if="article.cover.type === 1">
         <van-image class="Img" :src="article.cover.images[0]" />

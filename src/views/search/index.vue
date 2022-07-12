@@ -20,7 +20,12 @@
       @onSearch="onSearch"
     ></SearchSuggestion>
     <!-- 搜索历史 组件 -->
-    <SearchHistory :searchHistory="searchHistory" v-else></SearchHistory>
+    <SearchHistory
+      @deleteAll="searchHistory = []"
+      @onSearch="onSearch"
+      :searchHistory="searchHistory"
+      v-else
+    ></SearchHistory>
   </div>
 </template>
 
@@ -28,6 +33,8 @@
 import SearchHistory from "@/views/search/components/search-history.vue";
 import SearchSuggestion from "@/views/search/components/search-suggestion.vue";
 import SearchResult from "@/views/search/components/search-result.vue";
+import { HISTORYKEY } from "@/constants";
+import { setLocat, getLocat } from "@/utils/storage";
 export default {
   name: "SearchPage",
   components: {
@@ -40,11 +47,16 @@ export default {
     return {
       searchText: "", // 搜索框值
       isShowSearch: false, // 判断搜索栏是否显示
-      searchHistory: [], // 搜索历史
+      searchHistory: getLocat(HISTORYKEY) || [], // 搜索历史
     };
   },
   computed: {},
-  watch: {},
+  watch: {
+    // 监听searchHistory存入本地存储
+    searchHistory(val) {
+      setLocat(HISTORYKEY, val);
+    },
+  },
   created() {},
   methods: {
     // 搜索触发
@@ -53,14 +65,17 @@ export default {
       this.isShowSearch = true;
       this.searchText = value;
       console.log("正在搜索");
+      // 添加之前先判断value是否存在搜索历史列表里面
       const index = this.searchHistory.indexOf(value);
       if (index !== -1) {
+        // 找到这一项删除
         this.searchHistory.splice(index, 1);
       }
       this.searchHistory.unshift(value);
     },
     // 点击搜索栏取消按钮时触发
     onCancel() {
+      this.$router.push({ path: "/home" });
       console.log("取消了搜索");
     },
   },
