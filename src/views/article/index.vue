@@ -58,32 +58,68 @@
         <van-button class="retry-btn">点击重试</van-button>
       </div>
       <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
+
+      <!-------------------文章列表 ---------------->
+      <ArticleComment
+        v-if="article.art_id"
+        :articleId="article.art_id"
+      ></ArticleComment>
+      <!-------------------文章列表 ---------------->
     </div>
 
     <!-- 底部区域 -->
     <div class="article-bottom">
-      <van-button class="comment-btn" type="default" round size="small"
+      <van-button
+        @click="isPostShow = true"
+        class="comment-btn"
+        type="default"
+        round
+        size="small"
         >写评论</van-button
       >
       <van-icon name="comment-o" :badge="article.comm_count" color="#777" />
-      <collectArticle></collectArticle>
-      <!-- <van-icon color="#777" name="star-o" /> -->
-      <van-icon color="#777" name="good-job-o" />
+      <!-- 收藏组件 -->
+      <collectArticle
+        :art_id="article.art_id"
+        v-model="article.is_collected"
+      ></collectArticle>
+      <!-- 点赞组件 -->
+      <likeArticle
+        :articleId="article.art_id"
+        v-model="article.attitude"
+      ></likeArticle>
+      <!-- <van-icon color="#777" name="good-job-o" /> -->
       <van-icon name="share" color="#777777"></van-icon>
     </div>
     <!-- /底部区域 -->
+    <!--------------------------- 写评论弹层 ------------------>
+    <van-popup position="bottom" v-model="isPostShow">
+      <!-- 写评论弹出层内组件 -->
+      <PostComment :target="article.art_id"></PostComment>
+    </van-popup>
+    <!---------------------------- 写评论弹层 --------------------->
   </div>
 </template>
 
 <script>
 import { getArticleById } from "@/api";
 import { ImagePreview } from "vant";
-import FollowUser from "@/views/article/components/follow-user.vue";
-import collectArticle from "@/views/article/components/collectArticle.vue";
+import FollowUser from "@/views/article/components/follow-user";
+import collectArticle from "@/views/article/components/collectArticle";
+import likeArticle from "@/views/article/components/like-article";
+import PostComment from "@/views/article/components/post-comment.vue";
+// 评论列表
+import ArticleComment from "@/views/article/components/comment-list.vue";
 import "github-markdown-css";
 export default {
   name: "ArticleIndex",
-  components: { FollowUser, collectArticle },
+  components: {
+    FollowUser,
+    collectArticle,
+    likeArticle,
+    ArticleComment,
+    PostComment,
+  },
   props: {
     articleId: {
       type: [Number, String],
@@ -95,6 +131,7 @@ export default {
       article: {}, //请求回来的数据
       loading: false,
       isNotFound: false,
+      isPostShow: false, // 评论弹层
     };
   },
   computed: {},
